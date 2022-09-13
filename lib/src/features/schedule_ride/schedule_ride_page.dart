@@ -70,7 +70,7 @@ class _ScheduleRidePageState extends State<ScheduleRidePage> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      fullscreenDialog: true,
+                      // fullscreenDialog: true,
                       builder: (context) =>
                           const ScheduleRideConfirmationPage()));
             },

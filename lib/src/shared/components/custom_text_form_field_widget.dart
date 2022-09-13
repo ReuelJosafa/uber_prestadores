@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomTextFormField extends StatelessWidget {
-  final String title;
+  final String? title;
   final String hintText;
   final Widget? icon;
   final TextInputType? keyboardType;
@@ -16,7 +16,7 @@ class CustomTextFormField extends StatelessWidget {
     Key? key,
     required this.hintText,
     this.icon,
-    required this.title,
+    this.title,
     this.keyboardType,
     required this.textInputAction,
     this.obscureText = false,
@@ -32,8 +32,8 @@ class CustomTextFormField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (!underlineBorder)
-          Text(title, style: Theme.of(context).textTheme.headline3),
+        if (!underlineBorder && title != null)
+          Text(title!, style: Theme.of(context).textTheme.headline3),
         const SizedBox(height: 16),
         TextFormField(
           controller: controller,

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:uber_prestadores/src/features/home/home_page.dart';
-import 'package:uber_prestadores/src/features/password_recovery/password_recovery_page.dart';
 
 import '../../shared/components/custom_elevated_button_widget.dart';
 import '../../shared/components/custom_text_form_field_widget.dart';
+import '../../shared/constants/app_routes.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({Key? key}) : super(key: key);
@@ -13,7 +12,7 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  bool _isPasswordVisible = false;
+  bool _isPasswordObscured = true;
 
   @override
   Widget build(BuildContext context) {
@@ -48,15 +47,15 @@ class _AuthPageState extends State<AuthPage> {
                   CustomTextFormField(
                       keyboardType: TextInputType.visiblePassword,
                       textInputAction: TextInputAction.done,
-                      obscureText: _isPasswordVisible,
+                      obscureText: _isPasswordObscured,
                       title: 'Senha',
                       hintText: '*********',
                       icon: IconButton(
                         onPressed: () => setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
+                          _isPasswordObscured = !_isPasswordObscured;
                         }),
                         icon: Icon(
-                          _isPasswordVisible
+                          _isPasswordObscured
                               ? Icons.visibility_off_outlined
                               : Icons.visibility,
                         ),
@@ -67,26 +66,18 @@ class _AuthPageState extends State<AuthPage> {
               Align(
                 alignment: Alignment.centerRight,
                 child: InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const PasswordRecoveryPage()),
-                  ),
+                  onTap: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.forgetPassword),
                   child: Text("Esqueceu a senha?",
                       style: theme.textTheme.headline4),
                 ),
               ),
               const SizedBox(height: 32),
-              CustomElevatedButton(
-                context,
-                title: 'Efetuar login',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => HomePage(
-                          isAnAdministrator: controller.text == 'adm')),
-                ),
-              ),
+              CustomElevatedButton(context,
+                  title: 'Efetuar login',
+                  onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                      AppRoutes.home, (route) => false,
+                      arguments: controller.text == 'adm')),
               const SizedBox(height: 32),
               Text.rich(
                 TextSpan(text: 'Não tem uma conta? ', children: [

@@ -3,6 +3,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '../../shared/components/custom_back_button_widget.dart';
 import '../../shared/components/custom_elevated_button_widget.dart';
+import '../../shared/constants/app_routes.dart';
 import '../password_selection/password_selection_page.dart';
 
 class PasswordRecoveryPage extends StatefulWidget {
@@ -59,11 +60,8 @@ class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
               CustomElevatedButton(
                 context,
                 title: 'Prosseguir',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const PasswordSelectionPage()),
-                ),
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.selectPassword),
               ),
             ],
           ),

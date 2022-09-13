@@ -4,6 +4,7 @@ import 'package:uber_prestadores/src/features/home/home_page.dart';
 import 'package:uber_prestadores/src/shared/constants/app_images.dart';
 
 import '../../shared/components/custom_elevated_button_widget.dart';
+import '../../shared/constants/app_routes.dart';
 
 class PasswordRecoverySuccessPage extends StatefulWidget {
   const PasswordRecoverySuccessPage({Key? key}) : super(key: key);
@@ -55,11 +56,8 @@ class _PasswordRecoverySuccessPageState
                   color: Theme.of(context).buttonTheme.colorScheme!.secondary,
                   context,
                   title: 'Acessar Conta',
-                  onTap: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              const HomePage(isAnAdministrator: true))),
+                  onTap: () => Navigator.of(context)
+                      .pushNamed(AppRoutes.home, arguments: true),
                 ),
               ),
               // const SizedBox(height: 60)

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../shared/components/custom_back_button_widget.dart';
 import '../../shared/components/custom_elevated_button_widget.dart';
 import '../../shared/components/custom_text_form_field_widget.dart';
+import '../../shared/constants/app_routes.dart';
 import '../password_recovery_success/password_recovery_success_page.dart';
 
 class PasswordSelectionPage extends StatefulWidget {
@@ -88,11 +89,8 @@ class _PasswordSelectionPageState extends State<PasswordSelectionPage> {
             CustomElevatedButton(
               context,
               title: 'Salvar nova senha',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const PasswordRecoverySuccessPage()),
-              ),
+              onTap: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.passwordRecovered),
             ),
             const SizedBox(height: 16)
           ],

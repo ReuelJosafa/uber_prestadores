@@ -1,17 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:uber_prestadores/src/features/approvals_history/approvals_history_page.dart';
+import 'package:uber_prestadores/src/features/auth/auth_page.dart';
+import 'package:uber_prestadores/src/features/home/home_page.dart';
 import 'package:uber_prestadores/src/features/loading/loading_page.dart';
+import 'package:uber_prestadores/src/features/password_recovery/password_recovery_page.dart';
+import 'package:uber_prestadores/src/features/scheduled_rides/scheduled_rides_page.dart';
+import 'package:uber_prestadores/src/features/search_user/search_user_page.dart';
+import 'package:uber_prestadores/src/shared/constants/app_routes.dart';
+import 'package:uber_prestadores/src/shared/controllers/map_location_controller.dart';
+import 'package:uber_prestadores/src/shared/repositories/map_location_repository.dart';
+
+import 'features/password_recovery_success/password_recovery_success_page.dart';
+import 'features/password_selection/password_selection_page.dart';
+import 'features/schedule_ride_confirmation/schedule_ride_confirmation_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Uber prestadores',
-      theme: _buildTheme(),
-      debugShowCheckedModeBanner: false,
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const LoadingPage(),
+    return MultiProvider(
+      providers: [
+        Provider(create: (_) => MapLocationRepository()),
+        ChangeNotifierProvider(
+            create: (context) => MapLocationController(context.read()))
+      ],
+      child: MaterialApp(
+        title: 'Uber prestadores',
+        theme: _buildTheme(),
+        debugShowCheckedModeBanner: false,
+        // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        routes: {
+          AppRoutes.loading: (context) => const LoadingPage(),
+          AppRoutes.auth: (context) => const AuthPage(),
+          AppRoutes.forgetPassword: (context) => const PasswordRecoveryPage(),
+          AppRoutes.selectPassword: (context) => const PasswordSelectionPage(),
+          AppRoutes.passwordRecovered: (context) =>
+              const PasswordRecoverySuccessPage(),
+          AppRoutes.home: (context) => const HomePage(),
+          AppRoutes.scheduleRideConfirmation: (context) =>
+              const ScheduleRideConfirmationPage(),
+          AppRoutes.approvalsHistory: (context) => const ApprovalsHistoryPage(),
+          AppRoutes.scheduledRides: (context) => const ScheduledRidesPage(),
+          AppRoutes.searchUser: (context) => const SearchUser(),
+        },
+        // home: const LoadingPage(),
+      ),
     );
   }
 }

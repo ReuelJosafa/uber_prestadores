@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:uber_prestadores/src/shared/components/custom_elevated_button_widget.dart';
+import 'package:uber_prestadores/src/shared/controllers/map_location_controller.dart';
 
+import '../../../../shared/components/custom_sufix_icon_widget.dart';
 import '../../../../shared/components/custom_text_form_field_widget.dart';
 import '../../../../shared/constants/app_images.dart';
-import '../../../schedule_ride/schedule_ride_page.dart';
-import '../../../../shared/components/custom_sufix_icon_widget.dart';
+import '../../../../shared/constants/app_routes.dart';
 
 class UserSubpage extends StatefulWidget {
   const UserSubpage({Key? key}) : super(key: key);
@@ -32,22 +34,21 @@ class _UserSubpageState extends State<UserSubpage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 60, fontWeight: FontWeight.w400)),
               const SizedBox(height: 32),
-              const Text('Bem-vindo, Usuário.',
+              Text('Bem-vindo, Usuário.',
                   textAlign: TextAlign.start,
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w400)),
-              const SizedBox(height: 28),
+                  style: Theme.of(context).textTheme.headline1),
+              const SizedBox(height: 8),
               CustomTextFormField(
                   controller: controller,
                   keyboardType: TextInputType.streetAddress,
                   textInputAction: TextInputAction.next,
-                  title: 'Qual o seu destino?',
-                  hintText: 'Digite aqui',
+                  hintText: 'Digite seu destino',
                   icon: CustomSufixIcon(
                     backgroundColor:
                         Theme.of(context).buttonTheme.colorScheme!.secondary,
                     assetName: AppImages.search,
                   )),
-              const SizedBox(height: 28),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -56,23 +57,25 @@ class _UserSubpageState extends State<UserSubpage> {
           width: double.infinity,
           child: Stack(
             children: [
-              GoogleMap(
-                myLocationEnabled: true,
-                zoomControlsEnabled: false,
-                mapType: MapType.normal,
-                initialCameraPosition: CameraPosition(
-                    target: LatLng(-22.970225, -43.186071), zoom: 18),
-              ),
+              Consumer<MapLocationController>(builder: (_, location, __) {
+                return GoogleMap(
+                  myLocationEnabled: true,
+                  zoomControlsEnabled: false,
+                  mapType: MapType.normal,
+                  minMaxZoomPreference: const MinMaxZoomPreference(13, 16),
+                  onMapCreated: location.onMapCreated,
+                  initialCameraPosition: CameraPosition(
+                      target: LatLng(location.lat, location.lng), zoom: 16),
+                );
+              }),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                   child: CustomElevatedButton(context,
-                      onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ScheduleRidePage())),
+                      onTap: () => Navigator.of(context)
+                          .pushNamed(AppRoutes.scheduleRideConfirmation),
                       title: 'Agendar corrida',
                       icon: SvgPicture.asset(AppImages.calendar),
                       color:

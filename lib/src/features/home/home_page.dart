@@ -5,26 +5,29 @@ import 'package:uber_prestadores/src/features/auth/auth_page.dart';
 import 'package:uber_prestadores/src/features/search_user/search_user_page.dart';
 
 import '../../shared/constants/app_images.dart';
+import '../../shared/constants/app_routes.dart';
 import '../scheduled_rides/scheduled_rides_page.dart';
 import 'submodules/adm/adm_subpage.dart';
 import 'submodules/user/user_subpage.dart';
 
 class HomePage extends StatefulWidget {
-  final bool isAnAdministrator;
-  const HomePage({Key? key, required this.isAnAdministrator}) : super(key: key);
+  // final bool isAnAdministrator;
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  late bool isAnAdministrator;
   @override
   Widget build(BuildContext context) {
+    isAnAdministrator = ModalRoute.of(context)!.settings.arguments as bool;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: _buildAppBar(),
       drawer: _buildDrawer(),
-      body: widget.isAnAdministrator ? const AdmSubpage() : const UserSubpage(),
+      body: isAnAdministrator ? const AdmSubpage() : const UserSubpage(),
     );
   }
 
@@ -32,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     return AppBar(
       centerTitle: true,
       title: Text(
-        widget.isAnAdministrator ? 'Moderação de usuários' : 'Home',
+        isAnAdministrator ? 'Moderação de usuários' : 'Home',
       ),
       actions: [
         Padding(
@@ -59,15 +62,11 @@ class _HomePageState extends State<HomePage> {
           children: [
             _buildHeader(theme),
             const SizedBox(height: 80),
-            if (widget.isAnAdministrator)
+            if (isAnAdministrator)
               _buildListTile(
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const ApprovalsHistoryPage()));
+                    Navigator.of(context).pushNamed(AppRoutes.approvalsHistory);
                   },
                   icon: SvgPicture.asset(AppImages.simpleCheck),
                   theme: theme,
@@ -77,23 +76,17 @@ class _HomePageState extends State<HomePage> {
               _buildListTile(
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ScheduledRidesPage()));
+                    Navigator.of(context).pushNamed(AppRoutes.scheduledRides);
                   },
                   icon: SvgPicture.asset(AppImages.simpleCheck),
                   theme: theme,
                   title: 'Corridas agendadas',
                   subtitle: 'Veja as corridas proximas'),
-            if (widget.isAnAdministrator)
+            if (isAnAdministrator)
               _buildListTile(
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const SearchUser()));
+                    Navigator.of(context).pushNamed(AppRoutes.searchUser);
                   },
                   icon: SvgPicture.asset(AppImages.addPerson),
                   theme: theme,
@@ -101,13 +94,7 @@ class _HomePageState extends State<HomePage> {
                   subtitle: 'Busque por usuário registrado')
             else
               _buildListTile(
-                  onTap: () {
-                    // Navigator.pop(context);
-                    /* Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ApprovalsHistoryPage())); */
-                  },
+                  onTap: () {},
                   icon: SvgPicture.asset(AppImages.addPerson),
                   theme: theme,
                   title: 'Corridas solicitadas',
@@ -119,8 +106,8 @@ class _HomePageState extends State<HomePage> {
                 subtitle: 'Precisando de ajuda?'),
             const Expanded(child: SizedBox()),
             TextButton(
-                onPressed: () => Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => const AuthPage())),
+                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.searchUser, (route) => false),
                 child: Text('Sair de minha conta',
                     style: theme.textTheme.headline4!.copyWith(
                         decoration: TextDecoration.underline,

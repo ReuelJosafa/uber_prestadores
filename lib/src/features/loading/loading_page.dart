@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/constants/app_routes.dart';
 import '../auth/auth_page.dart';
 
 class LoadingPage extends StatefulWidget {
@@ -22,12 +23,16 @@ class _LoadingPageState extends State<LoadingPage>
         setState(() {});
       });
     controller.forward().then((value) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const AuthPage()),
-      );
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(AppRoutes.auth, (route) => false);
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    controller.dispose();
   }
 
   @override
