@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:uber_prestadores/src/features/approvals_history/approvals_history_page.dart';
-import 'package:uber_prestadores/src/features/auth/auth_page.dart';
-import 'package:uber_prestadores/src/features/search_user/search_user_page.dart';
 
 import '../../shared/constants/app_images.dart';
 import '../../shared/constants/app_routes.dart';
-import '../scheduled_rides/scheduled_rides_page.dart';
 import 'submodules/adm/adm_subpage.dart';
 import 'submodules/user/user_subpage.dart';
 
@@ -100,14 +96,17 @@ class _HomePageState extends State<HomePage> {
                   title: 'Corridas solicitadas',
                   subtitle: 'Veja as corridas solicitadas'),
             _buildListTile(
+                onTap: () {
+                  
+                },
                 icon: SvgPicture.asset(AppImages.questionCircled),
                 theme: theme,
                 title: 'Ajuda',
                 subtitle: 'Precisando de ajuda?'),
             const Expanded(child: SizedBox()),
             TextButton(
-                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.searchUser, (route) => false),
+                onPressed: () => Navigator.of(context)
+                    .pushNamedAndRemoveUntil(AppRoutes.auth, (route) => false),
                 child: Text('Sair de minha conta',
                     style: theme.textTheme.headline4!.copyWith(
                         decoration: TextDecoration.underline,

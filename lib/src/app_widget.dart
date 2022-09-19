@@ -9,11 +9,14 @@ import 'package:uber_prestadores/src/features/scheduled_rides/scheduled_rides_pa
 import 'package:uber_prestadores/src/features/search_user/search_user_page.dart';
 import 'package:uber_prestadores/src/shared/constants/app_routes.dart';
 import 'package:uber_prestadores/src/shared/controllers/map_location_controller.dart';
+import 'package:uber_prestadores/src/shared/repositories/client_http.dart';
+import 'package:uber_prestadores/src/shared/repositories/location_repository.dart';
 import 'package:uber_prestadores/src/shared/repositories/map_location_repository.dart';
 
 import 'features/password_recovery_success/password_recovery_success_page.dart';
 import 'features/password_selection/password_selection_page.dart';
 import 'features/schedule_ride_confirmation/schedule_ride_confirmation_page.dart';
+import 'shared/controllers/search_place_controller.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -23,8 +26,18 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider(create: (_) => MapLocationRepository()),
+        Provider(create: (_) => ClientHttp()),
+        Provider(
+            create: (context) =>
+                LocationRepository(context.read<ClientHttp>())),
         ChangeNotifierProvider(
-            create: (context) => MapLocationController(context.read()))
+            create: (context) => MapLocationController(
+                  context.read<MapLocationRepository>(),
+                  context.read<LocationRepository>(),
+                )),
+        ChangeNotifierProvider(
+            create: (context) =>
+                SearchPlaceController(context.read<LocationRepository>()))
       ],
       child: MaterialApp(
         title: 'Uber prestadores',

@@ -1,20 +1,19 @@
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../shared/components/custom_back_button_widget.dart';
 import '../../shared/components/custom_elevated_button_widget.dart';
+import '../../shared/components/custom_sufix_icon_widget.dart';
 import '../../shared/components/custom_text_form_field_widget.dart';
 import '../../shared/constants/app_images.dart';
-import '../../shared/components/custom_sufix_icon_widget.dart';
 import '../../shared/controllers/map_location_controller.dart';
+import '../../shared/controllers/search_place_controller.dart';
+import '../../shared/models/marker_model.dart';
+import '../../shared/utils/uint_8_list_utils.dart';
+import '../home/submodules/user/components/custom_search_widget.dart';
 import 'components/expansion_section.dart';
-import 'models/car_marker.dart';
 
 class ScheduleRideConfirmationPage extends StatefulWidget {
   const ScheduleRideConfirmationPage({Key? key}) : super(key: key);
@@ -26,30 +25,17 @@ class ScheduleRideConfirmationPage extends StatefulWidget {
 
 class _ScheduleRideConfirmationPageState
     extends State<ScheduleRideConfirmationPage> {
-  final markers = [
-    CarMarker(id: 'car1', lat: -22.970225, lng: -43.186071),
-    CarMarker(id: 'car2', lat: -22.964971, lng: -43.189366),
-    CarMarker(id: 'car3', lat: -22.966551, lng: -43.182456)
-  ];
   bool isModalOpen = false;
-
+  late final MapLocationController mapLocationController;
   final Set<Marker> setMarkers = {};
-
-  Future<Uint8List> getBytesFromAsset(String path, int width) async {
-    ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
-        targetWidth: width);
-    ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
-  }
-
+  Marker? _originMarker;
+  Marker? _destinationMarker;
+  final textOriginController = TextEditingController();
+  final textDestinationController = TextEditingController();
+  final Set<Polyline> polylines = {};
   _buildMarkers() {
-    addMarkers(CarMarker carMarker) async {
-      // BitmapDescriptor.fromAssetImage(ImageConfiguration(devicePixelRatio: pixelRatio), assetName)
-
-      getBytesFromAsset(AppImages.smallCar, 180).then((icon) {
+    addMarkers(MarkerModel carMarker) async {
+      Uint8ListUtils.getBytesFromAsset(AppImages.smallCar, 180).then((icon) {
         setMarkers.add(
           Marker(
               markerId: MarkerId(carMarker.id),
@@ -57,29 +43,92 @@ class _ScheduleRideConfirmationPageState
               icon: BitmapDescriptor.fromBytes(icon),
               onTap: () {
                 setState(() {
-                  // _showModalBottom();
                   isModalOpen = true;
                 });
               }),
         );
-        setState(() {
-          debugPrint("ESTÁ SEMPRE CHAMANDO O SETSTATE");
-        });
       });
     }
 
-    markers.forEach(addMarkers);
+    mapLocationController.markers.forEach(addMarkers);
+  }
+
+  void _buildOriginMarker(MarkerModel marker) {
+    _deleteLastMarker(_originMarker);
+
+    _originMarker = Marker(
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+        markerId: MarkerId(marker.id),
+        position: LatLng(marker.lat, marker.lng));
+
+    _addSingleMarkerToSetMarkers(_originMarker!);
+  }
+
+  void _buildDestinationMarker(MarkerModel marker) {
+    _deleteLastMarker(_destinationMarker);
+
+    _destinationMarker = Marker(
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        markerId: MarkerId(marker.id),
+        position: LatLng(marker.lat, marker.lng));
+
+    _addSingleMarkerToSetMarkers(_destinationMarker!);
+  }
+
+  void _deleteLastMarker(Marker? marker) {
+    if (marker != null) {
+      setMarkers
+          .removeWhere((setMarker) => setMarker.markerId == marker.markerId);
+    }
+  }
+
+  void _addSingleMarkerToSetMarkers(Marker marker) {
+    setMarkers.add(marker);
+    if (_originMarker == null || _destinationMarker == null) {
+      mapLocationController.animateCameraTo(marker.position);
+    }
+  }
+
+  void _setPolylines() {
+    polylines.add(Polyline(
+      polylineId: const PolylineId('polylineId'),
+      endCap: Cap.roundCap,
+      startCap: Cap.roundCap,
+      jointType: JointType.bevel,
+      width: 4,
+      color: Theme.of(context).primaryColor,
+      points: mapLocationController
+          .getDirections()!
+          .polylineDecoded
+          .map((point) => LatLng(point.latitude, point.longitude))
+          .toList(),
+    ));
+    mapLocationController.animateCamera(CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+            southwest: mapLocationController.getDirections()!.boundsSw,
+            northeast: mapLocationController.getDirections()!.boundsNe),
+        50));
   }
 
   @override
   void initState() {
-    _buildMarkers();
+    mapLocationController = context.read<MapLocationController>();
+    mapLocationController.addListener(() {
+      _buildDestinationMarker(mapLocationController.getDestinationMarker()!);
+      _buildMarkers();
+    });
+
+    final searchPlaceController = context.read<SearchPlaceController>();
+    textDestinationController.text =
+        searchPlaceController.selectedLocation.name;
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // final location = context.watch<UserLocationController>();
+    final searchPlaceController = Provider.of<SearchPlaceController>(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: _buildAppBar(),
@@ -91,31 +140,64 @@ class _ScheduleRideConfirmationPageState
               color: Theme.of(context).scaffoldBackgroundColor,
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                CustomTextFormField(
+                CustomSearchWidget(
+                  textHint: 'Digite o ponto de partida',
+                  onSuggestionSelected: (String placeId) async {
+                    await searchPlaceController.setSelectedLocation(placeId);
+                    final place = searchPlaceController.selectedLocation;
+                    mapLocationController.originMarker = MarkerModel(
+                        lat: place.location.lat, lng: place.location.lng);
+                    _buildOriginMarker(
+                        mapLocationController.getOriginMarker()!);
+                    if (_originMarker != null && _destinationMarker != null) {
+                      await mapLocationController.fetchDirections();
+                      _setPolylines();
+                    }
+                  },
+                  textController: textOriginController,
+                  assetIconName: AppImages.place,
+                  backgroundColor: Colors.blue,
+                ),
+                const SizedBox(height: 16),
+                /* CustomTextFormField(
                     keyboardType: TextInputType.streetAddress,
                     textInputAction: TextInputAction.next,
-                    // title: 'Qual o seu destino?',
                     hintText: 'Digite o ponto de partida',
                     icon: CustomSufixIcon(
                       backgroundColor:
                           Theme.of(context).buttonTheme.colorScheme!.secondary,
                       assetName: AppImages.place,
-                    )),
-                CustomTextFormField(
+                    )), */
+                CustomSearchWidget(
+                  textHint: 'Digite seu destino',
+                  onSuggestionSelected: (String placeId) async {
+                    await searchPlaceController.setSelectedLocation(placeId);
+                    final place = searchPlaceController.selectedLocation;
+                    mapLocationController.destinationMarker = MarkerModel(
+                        lat: place.location.lat, lng: place.location.lng);
+                    _buildDestinationMarker(
+                        mapLocationController.getDestinationMarker()!);
+                    if (_originMarker != null && _destinationMarker != null) {
+                      await mapLocationController.fetchDirections();
+                      _setPolylines();
+                    }
+                  },
+                  textController: textDestinationController,
+                  assetIconName: AppImages.search,
+                  backgroundColor: Colors.red,
+                ),
+                /* CustomTextFormField(
                     keyboardType: TextInputType.streetAddress,
                     textInputAction: TextInputAction.next,
-                    // title: 'Qual o seu destino?',
                     hintText: 'Digite seu destino',
                     icon: CustomSufixIcon(
                       backgroundColor:
                           Theme.of(context).buttonTheme.colorScheme!.secondary,
                       assetName: AppImages.search,
-                    )),
+                    )), */
                 CustomTextFormField(
-                    // controller: controller,
                     keyboardType: TextInputType.streetAddress,
                     textInputAction: TextInputAction.done,
-                    // title: 'Horário de partida:',
                     hintText: '00:00',
                     icon: CustomSufixIcon(
                       backgroundColor:
@@ -125,13 +207,11 @@ class _ScheduleRideConfirmationPageState
               ]),
             ),
           ),
-          // AnimatedAlign(alignment: Alignment.bottomCenter, duration: duration)
           Expanded(
             child: AnimatedAlign(
               alignment:
                   isModalOpen ? Alignment.topCenter : Alignment.bottomCenter,
               duration: const Duration(milliseconds: 800),
-              // padding: EdgeInsets.only(bottom: isModalOpen ? 8 : 0),
               child:
                   Consumer<MapLocationController>(builder: (_, location, __) {
                 return GoogleMap(
@@ -140,9 +220,11 @@ class _ScheduleRideConfirmationPageState
                   zoomControlsEnabled: false,
                   mapType: MapType.normal,
                   minMaxZoomPreference: const MinMaxZoomPreference(13, 16),
-                  initialCameraPosition: CameraPosition(
-                      target: LatLng(location.lat, location.lng), zoom: 16),
+                  onMapCreated: location.onMapCreated,
+                  initialCameraPosition:
+                      CameraPosition(target: location.latLng, zoom: 16),
                   markers: setMarkers,
+                  polylines: polylines,
                 );
               }),
             ),
@@ -227,8 +309,10 @@ class _ScheduleRideConfirmationPageState
                           ],
                         ),
                         const SizedBox(height: 20),
-                        CustomElevatedButton(context,
-                            onTap: () {},
+                        CustomElevatedButton(context, onTap: () async {
+                          await mapLocationController.fetchDirections();
+                          _setPolylines();
+                        },
                             title: 'Agendar corrida',
                             color: Theme.of(context)
                                 .buttonTheme

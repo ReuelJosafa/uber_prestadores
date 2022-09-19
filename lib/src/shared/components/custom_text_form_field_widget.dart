@@ -11,6 +11,7 @@ class CustomTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
   final bool underlineBorder;
   final TextEditingController? controller;
+  final void Function(String)? onChanged;
 
   const CustomTextFormField({
     Key? key,
@@ -24,6 +25,7 @@ class CustomTextFormField extends StatelessWidget {
     this.focusNode,
     this.underlineBorder = false,
     this.controller,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -36,6 +38,7 @@ class CustomTextFormField extends StatelessWidget {
           Text(title!, style: Theme.of(context).textTheme.headline3),
         const SizedBox(height: 16),
         TextFormField(
+          onChanged: onChanged,
           controller: controller,
           obscuringCharacter: '*',
           obscureText: obscureText,
