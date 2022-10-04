@@ -26,14 +26,16 @@ class CustomSearchWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchPlaceController = context.watch<SearchPlaceController>();
-    final mapLocationController = context.read<MapLocationController>();
+    final mapLocationController = context.watch<MapLocationController>();
 
     return TypeAheadField<PlaceSearch?>(
       textFieldConfiguration: TextFieldConfiguration(
         style: Theme.of(context).textTheme.headline3,
         controller: textController,
         onSubmitted: (value) {
-          if (value.isNotEmpty) {
+          if (value.isNotEmpty &&
+              mapLocationController.mapLocationState ==
+                  MapLocationState.success) {
             searchPlaceController.searchPlaces(
                 value, mapLocationController.latLng);
             if (searchPlaceController.searchResults.isNotEmpty) {
@@ -55,6 +57,10 @@ class CustomSearchWidget extends StatelessWidget {
             )),
       ),
       suggestionsCallback: (value) {
+        if (mapLocationController.mapLocationState !=
+            MapLocationState.success) {
+          return [];
+        }
         searchPlaceController.searchPlaces(value, mapLocationController.latLng);
         return searchPlaceController.searchResults;
       },
@@ -91,7 +97,9 @@ class CustomSearchWidget extends StatelessWidget {
         ),
       ),
       onSuggestionSelected: (PlaceSearch? suggestion) {
-        if (suggestion != null) {
+        if (suggestion != null &&
+            mapLocationController.mapLocationState ==
+                MapLocationState.success) {
           textController.text = suggestion.description;
           onSuggestionSelected(suggestion.placeId);
         }

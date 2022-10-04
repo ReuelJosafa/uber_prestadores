@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_prestadores/src/features/approvals_history/approvals_history_page.dart';
 import 'package:uber_prestadores/src/features/auth/auth_page.dart';
@@ -43,7 +44,14 @@ class MyApp extends StatelessWidget {
         title: 'Uber prestadores',
         theme: _buildTheme(),
         debugShowCheckedModeBanner: false,
-        // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('pt', 'BR'),
+        ],
         routes: {
           AppRoutes.loading: (context) => const LoadingPage(),
           AppRoutes.auth: (context) => const AuthPage(),
@@ -88,6 +96,20 @@ ThemeData _buildTheme() {
             fontWeight: FontWeight.w500,
             color: Colors.white,
             fontFamily: 'Poppins')),
+    dialogTheme: DialogTheme(
+      titleTextStyle: const TextStyle(
+        fontFamily: 'Poppins',
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+      ),
+      contentTextStyle: TextStyle(
+        fontFamily: 'Poppins',
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: Colors.black.withOpacity(0.6),
+      ),
+    ),
     // toggleableActiveColor: const Color(0xFFD3A62A),
     splashColor: const Color(0xFFC4C4C4),
     buttonTheme: const ButtonThemeData(

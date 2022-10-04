@@ -68,6 +68,7 @@ class CustomCardTile extends StatelessWidget {
               children: [
                 Expanded(
                     child: InkWell(
+                  splashColor: Colors.white,
                   onTap: onAcceptTap,
                   child: Container(
                     color: const Color(0xFF41F95E),
@@ -82,6 +83,7 @@ class CustomCardTile extends StatelessWidget {
                 )),
                 Expanded(
                     child: InkWell(
+                  splashColor: Colors.white,
                   onTap: onDeclineTap,
                   child: Container(
                     color: const Color(0xFFF94141),

@@ -11,30 +11,35 @@ class SearchPlaceController extends ChangeNotifier {
   late Place selectedLocation;
   String error = '';
   SearchState state = SearchState.loading;
+  bool showErrorDialog = true;
 
   SearchPlaceController(this.locationRepository);
 
   Future<void> searchPlaces(String searchTerm, LatLng latLng) async {
-    state = SearchState.loading;
     try {
       searchResults =
           await locationRepository.getAutocomplete(searchTerm, latLng);
-      notifyListeners();
     } catch (e) {
       state = SearchState.error;
-      error = 'Verifique a conexão com a internet ou tente novamente.';
+      error =
+          'Certifique-se de que você está conectado a uma rede Wi-Fi ou uma rede móvel e tente novamente.';
       notifyListeners();
     }
   }
 
   Future<void> setSelectedLocation(String placeId) async {
+    state = SearchState.loading;
+    notifyListeners();
+
     try {
       final sLocation = await locationRepository.getPlace(placeId);
       selectedLocation = sLocation;
+      state = SearchState.success;
       notifyListeners();
     } catch (e) {
       state = SearchState.error;
-      error = 'Verifique a conexão com a internet ou tente novamente.';
+      error =
+          'Verifique a conexão com a internet ou tente novamente mais tarde.';
       notifyListeners();
     }
   }

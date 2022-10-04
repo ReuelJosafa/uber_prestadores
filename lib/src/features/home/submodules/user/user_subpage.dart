@@ -9,6 +9,7 @@ import '../../../../shared/constants/app_images.dart';
 import '../../../../shared/constants/app_routes.dart';
 import '../../../../shared/controllers/search_place_controller.dart';
 import '../../../../shared/models/marker_model.dart';
+import '../../../../shared/utils/alert_dialog_utils.dart';
 import 'components/custom_search_widget.dart';
 
 class UserSubpage extends StatefulWidget {
@@ -21,22 +22,20 @@ class UserSubpage extends StatefulWidget {
 class _UserSubpageState extends State<UserSubpage> {
   final textSearchController = TextEditingController();
   late final MapLocationController mapLocationController;
-  late final SearchPlaceController searchPlaceController;
-
   final Set<Marker> setMarkers = {};
-
   Marker? newSearchMarker;
+  bool _showLinearProgressIndicator = false;
 
   void _buildMarkers() {
-    void addMarkers(MarkerModel carMarker) async {
+    void addMarkers(MarkerModel destinationMarker) {
       setMarkers.add(
         Marker(
-            markerId: MarkerId(carMarker.id),
-            position: LatLng(carMarker.lat, carMarker.lng)),
+            markerId: MarkerId(destinationMarker.id),
+            position: LatLng(destinationMarker.lat, destinationMarker.lng)),
       );
     }
 
-    mapLocationController.markers.forEach(addMarkers);
+    mapLocationController.destinationMarkers.forEach(addMarkers);
   }
 
   void _buildSingleMarker(MarkerModel marker) {
@@ -55,6 +54,7 @@ class _UserSubpageState extends State<UserSubpage> {
       setMarkers.removeWhere(
           (marker) => marker.markerId == newSearchMarker!.markerId);
     }
+    _buildMarkers();
   }
 
   void _addSingleMarkerToSetMarkers() {
@@ -66,21 +66,29 @@ class _UserSubpageState extends State<UserSubpage> {
   void initState() {
     mapLocationController = context.read<MapLocationController>();
 
-    mapLocationController.addListener(() => _buildMarkers());
+    mapLocationController.addListener(() {
+      _buildMarkers();
+    });
 
-    searchPlaceController = context.read<SearchPlaceController>();
+    final searchPlaceController = context.read<SearchPlaceController>();
 
-    searchPlaceController.addListener(() {
-      if (searchPlaceController.state == SearchState.error) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text("Erro"),
-              content: Text(searchPlaceController.error),
-            );
-          },
+    searchPlaceController.addListener(() async {
+      //TODO: Modificar maneira de exibição de mensagem
+      if (searchPlaceController.state == SearchState.error &&
+          searchPlaceController.showErrorDialog) {
+        searchPlaceController.showErrorDialog = false;
+        await AlertDialogUtils.showAlertDialog(
+          context,
+          title: "Erro de conexão",
+          contentText: searchPlaceController.error,
         );
+        await Future.delayed(const Duration(seconds: 15)).then((_) {
+          searchPlaceController.showErrorDialog = true;
+        });
+      } else if (searchPlaceController.state == SearchState.loading) {
+        _showLinearProgressIndicator = true;
+      } else {
+        _showLinearProgressIndicator = false;
       }
     });
 
@@ -89,8 +97,11 @@ class _UserSubpageState extends State<UserSubpage> {
 
   @override
   Widget build(BuildContext context) {
+    final searchPlaceController = context.watch<SearchPlaceController>();
+
     return Column(
       children: [
+        if (_showLinearProgressIndicator) const LinearProgressIndicator(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
@@ -111,7 +122,9 @@ class _UserSubpageState extends State<UserSubpage> {
                   await searchPlaceController.setSelectedLocation(placeId);
                   final place = searchPlaceController.selectedLocation;
                   mapLocationController.destinationMarker = MarkerModel(
-                      lat: place.location.lat, lng: place.location.lng);
+                      lat: place.location.lat,
+                      lng: place.location.lng,
+                      address: place.name);
                   _buildSingleMarker(
                       mapLocationController.getDestinationMarker()!);
                 },
@@ -134,7 +147,7 @@ class _UserSubpageState extends State<UserSubpage> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(location.error,
-                      textAlign: TextAlign.center,
+                          textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.headline3),
                     ),
                   );
@@ -144,26 +157,11 @@ class _UserSubpageState extends State<UserSubpage> {
                   myLocationEnabled: true,
                   zoomControlsEnabled: false,
                   mapType: MapType.normal,
-                  minMaxZoomPreference: const MinMaxZoomPreference(13, 16),
+                  minMaxZoomPreference: const MinMaxZoomPreference(8, 16),
                   onMapCreated: location.onMapCreated,
                   initialCameraPosition:
                       CameraPosition(target: location.latLng, zoom: 16),
                   markers: setMarkers,
-                  /* onTap: (place) {
-                    mapLocationController.originMarker = MarkerModel(
-                        id: place.latitude.toString(),
-                        lat: place.latitude,
-                        lng: place.longitude);
-                    /* Place newPlace = Place(
-                        name: 'novoLugar',
-                        vicinity: 'vicinity',
-                        location: Location(
-                            lat: place.latitude, lng: place.longitude)); */
-                    setState(() {
-                      // _buildSingleMarker(newPlace);
-                      textSearchController.text = '';
-                    });
-                  }, */
                 );
               }),
               Align(
@@ -178,10 +176,10 @@ class _UserSubpageState extends State<UserSubpage> {
                             ? () => Navigator.of(context)
                                     .pushNamed(
                                         AppRoutes.scheduleRideConfirmation)
-                                    .then((value) {
-                                  /* setState(() {});
-                                    _deleteLastMarker();
-                                    newSearchMarker = null; */
+                                    .then((_) {
+                                  _deleteLastMarker();
+                                  newSearchMarker = null;
+                                  textSearchController.text = '';
                                 })
                             : null,
                         title: 'Agendar corrida',

@@ -1,10 +1,30 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import '../models/marker_model.dart';
 
 class MapLocationRepository {
-  // -26.23330657036441, -51.054782264858574
-  // -26.229564201999867, -51.0682147253808
-  List<MarkerModel> fetchMarkers() => [
-        MarkerModel(lat: -26.23330657036441, lng: -51.054782264858574),
-        MarkerModel(lat: -26.229564201999867, lng: -51.0682147253808),
+  final List<MarkerModel> _destinationMarkers = [];
+
+  void addDestinationMarker(MarkerModel marker) =>
+      _destinationMarkers.add(marker);
+
+  void addDestinationMarkers(List<MarkerModel> markers) =>
+      _destinationMarkers.addAll(markers);
+
+  List<MarkerModel> get destinationMakers => [..._destinationMarkers];
+
+  // TODO: Modificar tranzendo localização de veículos próximos ao local de partida.
+  List<MarkerModel> fetchCarMarkers(LatLng latLng) => [
+        MarkerModel(lat: latLng.latitude + 0.005, lng: latLng.longitude),
+        MarkerModel(lat: latLng.latitude, lng: latLng.longitude + 0.005),
+        MarkerModel(
+            lat: latLng.latitude + 0.005, lng: latLng.longitude + 0.005),
       ];
+
+/*   List<MarkerModel> fetchDestinationMarkers(LatLng latLng) => [
+        MarkerModel(lat: latLng.latitude + 0.005, lng: latLng.longitude),
+        MarkerModel(lat: latLng.latitude, lng: latLng.longitude + 0.005),
+        MarkerModel(
+            lat: latLng.latitude + 0.005, lng: latLng.longitude + 0.005),
+      ]; */
 }

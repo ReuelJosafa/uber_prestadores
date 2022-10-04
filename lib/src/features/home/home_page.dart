@@ -97,7 +97,8 @@ class _HomePageState extends State<HomePage> {
                   subtitle: 'Veja as corridas solicitadas'),
             _buildListTile(
                 onTap: () {
-                  
+                  /* Navigator.pop(context);
+                  Navigator.of(context).pushNamed('/teste'); */
                 },
                 icon: SvgPicture.asset(AppImages.questionCircled),
                 theme: theme,

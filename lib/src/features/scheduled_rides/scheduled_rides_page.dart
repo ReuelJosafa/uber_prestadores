@@ -15,7 +15,7 @@ class _ScheduledRidesPageState extends State<ScheduledRidesPage> {
   final scheduledRides = List.generate(
       20,
       (index) => ScheduledRide(
-          personName: 'Nome:Lorem Ipsum Monteiro Dollor $index',
+          personName: 'Lorem Ipsum Monteiro Dollor $index',
           address: 'Centro - Rio de Janeiro, RJ',
           dateTime: DateTime.now()));
 

@@ -12,6 +12,8 @@ class CustomTextFormField extends StatelessWidget {
   final bool underlineBorder;
   final TextEditingController? controller;
   final void Function(String)? onChanged;
+  final bool readOnly;
+  final void Function()? onTap;
 
   const CustomTextFormField({
     Key? key,
@@ -26,6 +28,8 @@ class CustomTextFormField extends StatelessWidget {
     this.underlineBorder = false,
     this.controller,
     this.onChanged,
+    this.readOnly = false,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -40,6 +44,8 @@ class CustomTextFormField extends StatelessWidget {
         TextFormField(
           onChanged: onChanged,
           controller: controller,
+          onTap: onTap,
+          readOnly: readOnly,
           obscuringCharacter: '*',
           obscureText: obscureText,
           keyboardType: keyboardType,
