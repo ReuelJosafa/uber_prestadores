@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_prestadores/src/shared/models/marker_model.dart';
-import 'package:uber_prestadores/src/shared/models/place.dart';
 import 'package:uber_prestadores/src/shared/repositories/map_location_repository.dart';
 
 import '../models/direction_model.dart';
@@ -26,11 +25,6 @@ class MapLocationController extends ChangeNotifier {
 
   List<MarkerModel> get carMarkers => [..._carMarkers];
   List<MarkerModel> get destinationMarkers => [..._destinationMarkers];
-
-/*   bool isThereNoInDestinationmarkersList(MarkerModel markerModel) {
-    return !_destinationMarkers
-        .contains((MarkerModel dMarker) => dMarker.id == markerModel.id);
-  } */
 
   onMapCreated(GoogleMapController gmc) async {
     _mapController = gmc;
